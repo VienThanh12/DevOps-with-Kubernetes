@@ -15,3 +15,8 @@
 - [1.3.](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.3)
 
 - [1.4.](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.4)
+
+- [1.5.](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.5)
+
+  ![1.5.1.](./sample/1.5.1.png)
+  ![1.5.2.](./sample/1.5.2.png)
