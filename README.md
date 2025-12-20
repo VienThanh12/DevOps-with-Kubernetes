@@ -39,3 +39,8 @@
 
   ![1.10.1](./sample/1.10.1.png)
   ![1.10.2](./sample/1.10.2.png)
+
+- [1.11](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.11)
+  ![1.11.1](./sample/1.11.1.png)
+
+  ![1.11.2](./sample/1.11.2.png)

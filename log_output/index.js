@@ -1,24 +1,42 @@
+const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { randomUUID } = require("crypto");
 
 const randomString = randomUUID();
-const logDir = process.env.LOG_DIR || "/var/log/app";
-const logFile = process.env.LOG_FILE || path.join(logDir, "log.txt");
+const PORT = parseInt(process.env.PORT || "3000", 10);
+const DATA_DIR = process.env.DATA_DIR || "/data";
+const COUNT_FILE = process.env.COUNT_FILE || path.join(DATA_DIR, "pingpong-count.txt");
 
-fs.mkdirSync(logDir, { recursive: true });
-console.log(`Writer started. Random string: ${randomString}`);
-console.log(`Writing to: ${logFile}`);
+console.log(`Log output started. Random string: ${randomString}`);
+console.log(`Reading count from: ${COUNT_FILE}`);
 
-setInterval(() => {
-  const timestamp = new Date().toISOString();
-  const line = `${timestamp} ${randomString}\n`;
-  fs.appendFile(logFile, line, (err) => {
-    if (err) {
-      console.error("Failed to append log:", err);
-    }
-  });
-}, 5000);
+function readCount() {
+  try {
+    const raw = fs.readFileSync(COUNT_FILE, "utf8").trim();
+    const n = parseInt(raw, 10);
+    return Number.isNaN(n) ? 0 : n;
+  } catch (e) {
+    return 0;
+  }
+}
 
-// Keep process alive
-setInterval(() => {}, 1 << 30);
+const server = http.createServer((req, res) => {
+  if (req.method === "GET" && req.url === "/status") {
+    const payload = {
+      timestamp: new Date().toISOString(),
+      randomString,
+      pingPongCount: readCount(),
+    };
+    const body = JSON.stringify(payload);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(body);
+  } else {
+    res.writeHead(404);
+    res.end("Not Found");
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`HTTP server listening on port ${PORT}`);
+});

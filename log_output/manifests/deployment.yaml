@@ -12,33 +12,23 @@ spec:
       labels:
         app: log-output
     spec:
-      volumes: # Define volume
-        - name: shared-logs
-          emptyDir: {}
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: shared-pvc
       containers:
-        - name: log-writer
+        - name: log-output
           image: log-output:1.0
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: LOG_DIR
-              value: "/var/log/app"
-            - name: LOG_FILE
-              value: "/var/log/app/log.txt"
-          volumeMounts:
-            - name: shared-logs
-              mountPath: /var/log/app
-        - name: log-reader
-          image: log-reader:1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: PORT
               value: "3000"
-            - name: LOG_DIR
-              value: "/var/log/app"
-            - name: LOG_FILE
-              value: "/var/log/app/log.txt"
+            - name: DATA_DIR
+              value: "/data"
+            - name: COUNT_FILE
+              value: "/data/pingpong-count.txt"
           ports:
             - containerPort: 3000
           volumeMounts:
-            - name: shared-logs
-              mountPath: /var/log/app
+            - name: shared-data
+              mountPath: /data
