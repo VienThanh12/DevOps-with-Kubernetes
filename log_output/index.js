@@ -1,31 +1,24 @@
-const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const { randomUUID } = require("crypto");
 
 const randomString = randomUUID();
-console.log(`Application started. Random string: ${randomString}`);
+const logDir = process.env.LOG_DIR || "/var/log/app";
+const logFile = process.env.LOG_FILE || path.join(logDir, "log.txt");
+
+fs.mkdirSync(logDir, { recursive: true });
+console.log(`Writer started. Random string: ${randomString}`);
+console.log(`Writing to: ${logFile}`);
 
 setInterval(() => {
   const timestamp = new Date().toISOString();
-  console.log(`${timestamp}: ${randomString}`);
+  const line = `${timestamp} ${randomString}\n`;
+  fs.appendFile(logFile, line, (err) => {
+    if (err) {
+      console.error("Failed to append log:", err);
+    }
+  });
 }, 5000);
 
-const PORT = parseInt(process.env.PORT || "3000", 10);
-
-const server = http.createServer((req, res) => {
-  if (req.method === "GET" && req.url === "/status") {
-    const payload = {
-      timestamp: new Date().toISOString(),
-      randomString,
-    };
-    const body = JSON.stringify(payload);
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(body);
-  } else {
-    res.writeHead(404);
-    res.end("Not Found");
-  }
-});
-
-server.listen(PORT, () => {
-  console.log(`HTTP server listening on port ${PORT}`);
-});
+// Keep process alive
+setInterval(() => {}, 1 << 30);
