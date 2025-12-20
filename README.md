@@ -24,3 +24,7 @@
 - [1.6](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.6)
 
   ![1.6](./sample/1.6.png)
+
+- [1.7](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.7)
+
+  ![1.7](./sample/1.7.png)

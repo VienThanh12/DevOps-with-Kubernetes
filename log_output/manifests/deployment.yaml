@@ -16,3 +16,8 @@ spec:
         - name: log-output
           image: log-output:1.0
           imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 3000
