@@ -6,7 +6,8 @@ const { randomUUID } = require("crypto");
 const randomString = randomUUID();
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const DATA_DIR = process.env.DATA_DIR || "/data";
-const COUNT_FILE = process.env.COUNT_FILE || path.join(DATA_DIR, "pingpong-count.txt");
+const COUNT_FILE =
+  process.env.COUNT_FILE || path.join(DATA_DIR, "pingpong-count.txt");
 
 console.log(`Log output started. Random string: ${randomString}`);
 console.log(`Reading count from: ${COUNT_FILE}`);
