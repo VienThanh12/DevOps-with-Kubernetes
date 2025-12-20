@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-pong
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-pong
+  template:
+    metadata:
+      labels:
+        app: ping-pong
+    spec:
+      containers:
+        - name: ping-pong
+          image: ping-pong:1.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "8081"
+          ports:
+            - containerPort: 8081

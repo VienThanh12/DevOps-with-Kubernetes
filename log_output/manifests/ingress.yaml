@@ -16,3 +16,28 @@ spec:
                 name: log-output-svc
                 port:
                   number: 3000
+          - path: /pingpong
+            pathType: Prefix
+            backend:
+              service:
+                name: ping-pong-svc
+                port:
+                  number: 8081
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: log-output-ing
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - host: log.local
+      http:
+        paths:
+          - path: /status
+            pathType: Prefix
+            backend:
+              service:
+                name: log-output-svc
+                port:
+                  number: 3000
