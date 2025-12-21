@@ -9,8 +9,8 @@ const { randomUUID } = require("crypto");
 const randomString = randomUUID();
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const DATA_DIR = process.env.DATA_DIR || "/data";
-const COUNT_FILE =
-  process.env.COUNT_FILE || path.join(DATA_DIR, "pingpong-count.txt");
+const PING_PONG_URL =
+  process.env.PING_PONG_URL || "http://ping-pong-svc:8081/pingpong";
 const IMAGE_URL = "https://picsum.photos/1200";
 const IMAGE_HOST = new URL(IMAGE_URL).hostname;
 const IMAGE_FILE = process.env.IMAGE_FILE || path.join(DATA_DIR, "image.jpg");
@@ -56,32 +56,54 @@ try {
 } catch {}
 
 console.log(`Log output started. Random string: ${randomString}`);
-console.log(`Reading count from: ${COUNT_FILE}`);
+console.log(`Fetching ping-pong via: ${PING_PONG_URL}`);
 console.log(`Image cache: ${IMAGE_FILE} (TTL ${IMAGE_TTL_MIN} min)`);
 try {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 } catch {}
 
-function readCount() {
+function fetchPingPong(cb) {
   try {
-    const raw = fs.readFileSync(COUNT_FILE, "utf8").trim();
-    const n = parseInt(raw, 10);
-    return Number.isNaN(n) ? 0 : n;
+    const url = new URL(PING_PONG_URL);
+    const lib = url.protocol === "https:" ? https : http;
+    const req = lib.get(PING_PONG_URL, (resp) => {
+      let buf = "";
+      resp.on("data", (d) => (buf += String(d)));
+      resp.on("end", () => {
+        const m = buf.match(/pong\s+(\d+)/i);
+        const count = m ? parseInt(m[1], 10) || 0 : 0;
+        cb(null, { text: buf, count });
+      });
+    });
+    req.on("error", (err) => cb(err));
+    req.setTimeout(3000, () => req.destroy(new Error("timeout")));
   } catch (e) {
-    return 0;
+    cb(e);
   }
 }
 
 const server = http.createServer((req, res) => {
   if (req.method === "GET" && req.url === "/status") {
-    const payload = {
-      timestamp: new Date().toISOString(),
-      randomString,
-      pingPongCount: readCount(),
-    };
-    const body = JSON.stringify(payload);
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(body);
+    fetchPingPong((err, data) => {
+      const payload = {
+        timestamp: new Date().toISOString(),
+        randomString,
+        pingPongCount: err ? 0 : data.count,
+      };
+      const body = JSON.stringify(payload);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(body);
+    });
+  } else if (req.method === "GET" && req.url === "/pingpong") {
+    fetchPingPong((err, data) => {
+      if (err) {
+        res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("Failed to reach ping-pong service\n");
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end(data.text);
+    });
   } else if (req.method === "GET" && req.url === "/image") {
     serveCachedImageWithTTL(req, res);
   } else if (req.method === "POST" && req.url === "/image") {
@@ -111,8 +133,8 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`HTTP server listening on port ${PORT}`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`HTTP server listening on 0.0.0.0:${PORT}`);
 });
 
 function loadMeta() {

@@ -12,10 +12,6 @@ spec:
       labels:
         app: log-output
     spec:
-      volumes:
-        - name: shared-data
-          persistentVolumeClaim:
-            claimName: shared-pvc
       containers:
         - name: log-output
           image: log-output:1.0
@@ -23,14 +19,9 @@ spec:
           env:
             - name: PORT
               value: "3000"
-            - name: DATA_DIR
-              value: "/data"
-            - name: COUNT_FILE
-              value: "/data/pingpong-count.txt"
+            - name: PING_PONG_URL
+              value: "http://ping-pong-svc:8081/pingpong"
             - name: IMAGE_FETCH_DISABLED
               value: "true"
           ports:
             - containerPort: 3000
-          volumeMounts:
-            - name: shared-data
-              mountPath: /data

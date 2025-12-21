@@ -12,10 +12,6 @@ spec:
       labels:
         app: ping-pong
     spec:
-      volumes:
-        - name: shared-data
-          persistentVolumeClaim:
-            claimName: shared-pvc
       containers:
         - name: ping-pong
           image: ping-pong:1.0
@@ -23,12 +19,5 @@ spec:
           env:
             - name: PORT
               value: "8081"
-            - name: DATA_DIR
-              value: "/data"
-            - name: COUNT_FILE
-              value: "/data/pingpong-count.txt"
           ports:
             - containerPort: 8081
-          volumeMounts:
-            - name: shared-data
-              mountPath: /data
