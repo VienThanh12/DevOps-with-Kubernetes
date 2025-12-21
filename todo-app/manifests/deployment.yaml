@@ -13,6 +13,10 @@ spec:
       labels:
         app: todo-app
     spec:
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: shared-pvc
       containers:
         - name: todo-app
           image: todo-app:1.0
@@ -20,3 +24,12 @@ spec:
           env:
             - name: PORT
               value: "9000"
+            - name: DATA_DIR
+              value: "/data"
+            - name: IMAGE_TTL_MIN
+              value: "10"
+            - name: IMAGE_FETCH_DISABLED
+              value: "true"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
