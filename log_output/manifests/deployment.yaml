@@ -27,6 +27,8 @@ spec:
               value: "/data"
             - name: COUNT_FILE
               value: "/data/pingpong-count.txt"
+            - name: IMAGE_FETCH_DISABLED
+              value: "true"
           ports:
             - containerPort: 3000
           volumeMounts:
