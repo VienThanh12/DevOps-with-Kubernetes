@@ -30,6 +30,8 @@ spec:
               value: "10"
             - name: IMAGE_FETCH_DISABLED
               value: "true"
+            - name: TODO_BACKEND_URL
+              value: "http://todo-backend-svc:2345"
           volumeMounts:
             - name: shared-data
               mountPath: /data

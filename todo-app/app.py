@@ -12,14 +12,11 @@ META_FILE = os.path.join(DATA_DIR, "todo-image-meta.json")
 IMAGE_TTL_MIN = int(os.environ.get("IMAGE_TTL_MIN", "10"))
 IMAGE_TTL_MS = IMAGE_TTL_MIN * 60 * 1000
 IMAGE_FETCH_DISABLED = os.environ.get("IMAGE_FETCH_DISABLED", "true").lower() == "true"
+TODO_BACKEND_URL = os.environ.get("TODO_BACKEND_URL", "http://todo-backend-svc:2345")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
-TODOS = [
-    "Learn JavaScript",
-    "Learn React",
-    "Build a project",
-]
+# Todos are managed by the external todo-backend service
 
 HTML_TEMPLATE = """<!doctype html>
 <html>
@@ -48,9 +45,7 @@ HTML_TEMPLATE = """<!doctype html>
                 <p id="err" class="error" style="display:none;">Todo must be 140 characters or less.</p>
 
         <h2>Existing Todos</h2>
-        <ul>
-            {{TODOS}}
-        </ul>
+        <ul id="todoList"></ul>
 
                 <h2>Image</h2>
                 <p>Random image (cached for %%TTL%% minutes):</p>
@@ -82,10 +77,18 @@ input.addEventListener("input", () => {
 
 function addTodo() {
     if (!input.value) return;
-    alert("Todo queued: " + input.value);
-    input.value = "";
-    counter.textContent = "0 / 140";
+    const text = input.value;
+    fetch("/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+    }).then(res => {
+        if (!res.ok) throw new Error("Failed to add");
+        input.value = "";
+        counter.textContent = "0 / 140";
         sendBtn.disabled = true;
+        loadTodos();
+    }).catch(() => alert("Failed to add todo"));
 }
 
 uploadBtn.addEventListener("click", async () => {
@@ -104,16 +107,24 @@ uploadBtn.addEventListener("click", async () => {
         alert("Upload failed");
     }
 });
+
+async function loadTodos() {
+    try {
+        const res = await fetch("/todos");
+        const data = await res.json();
+        const list = document.getElementById("todoList");
+        list.innerHTML = (data.todos || []).map(t => `<li>${t}</li>`).join("");
+    } catch (e) {
+        // ignore
+    }
+}
+loadTodos();
 </script>
 </body>
 </html>
 """
 
-INDEX_HTML = (
-    HTML_TEMPLATE
-    .replace("{{TODOS}}", "".join(f"<li>{t}</li>" for t in TODOS))
-    .replace("%%TTL%%", str(IMAGE_TTL_MIN))
-)
+INDEX_HTML = HTML_TEMPLATE.replace("%%TTL%%", str(IMAGE_TTL_MIN))
 
 
 class TodoHandler(BaseHTTPRequestHandler):
@@ -125,6 +136,8 @@ class TodoHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+        elif self.path == "/todos":
+            self.proxy_todos_get()
         elif self.path.startswith("/image"):
             self.handle_image_get()
         else:
@@ -134,6 +147,8 @@ class TodoHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/image":
             self.handle_image_post()
+        elif self.path == "/todos":
+            self.proxy_todos_post()
         else:
             self.send_response(404)
             self.end_headers()
@@ -194,6 +209,42 @@ class TodoHandler(BaseHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write(b"Failed to save image\n")
+
+    # Proxy /todos to backend
+    def proxy_todos_get(self):
+        try:
+            req = urllib.request.Request(f"{TODO_BACKEND_URL}/todos", method="GET")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = resp.read()
+                ct = resp.headers.get("Content-Type", "application/json")
+                self.send_response(200)
+                self.send_header("Content-Type", ct)
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+        except Exception:
+            self.send_response(502)
+            self.end_headers()
+
+    def proxy_todos_post(self):
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            body = self.rfile.read(length) if length > 0 else b""
+            ct = self.headers.get("Content-Type", "application/json")
+            req = urllib.request.Request(f"{TODO_BACKEND_URL}/todos", data=body, method="POST")
+            req.add_header("Content-Type", ct)
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = resp.read()
+                code = resp.getcode() or 200
+                ct2 = resp.headers.get("Content-Type", "application/json")
+                self.send_response(code)
+                self.send_header("Content-Type", ct2)
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+        except Exception:
+            self.send_response(502)
+            self.end_headers()
 
 
 # Helpers for image caching
