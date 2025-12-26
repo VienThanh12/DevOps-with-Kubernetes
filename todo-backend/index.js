@@ -87,7 +87,9 @@ const server = http.createServer((req, res) => {
   if (req.method === "GET" && req.url === "/todos") {
     (async () => {
       try {
-        const { rows } = await pool.query("SELECT id, text FROM todos ORDER BY id ASC");
+        const { rows } = await pool.query(
+          "SELECT id, text FROM todos ORDER BY id ASC"
+        );
         return send(res, 200, { todos: rows });
       } catch (e) {
         return send(res, 500, { error: "db error" });
@@ -110,8 +112,13 @@ const server = http.createServer((req, res) => {
       (async () => {
         try {
           await pool.query("INSERT INTO todos (text) VALUES ($1)", [text]);
-          const { rows } = await pool.query("SELECT COUNT(*) AS count FROM todos");
-          return send(res, 201, { ok: true, count: parseInt(rows[0].count, 10) });
+          const { rows } = await pool.query(
+            "SELECT COUNT(*) AS count FROM todos"
+          );
+          return send(res, 201, {
+            ok: true,
+            count: parseInt(rows[0].count, 10),
+          });
         } catch (e) {
           return send(res, 500, { error: "db error" });
         }
