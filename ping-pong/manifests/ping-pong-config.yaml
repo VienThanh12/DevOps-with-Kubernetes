@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ping-pong-config
+  namespace: exercises
+data:
+  PORT: "8081"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "pingpong"
+  DB_USER: "pingpong"

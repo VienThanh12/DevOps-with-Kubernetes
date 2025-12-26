@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: exercises
+data:
+  POSTGRES_DB: "pingpong"
+  POSTGRES_USER: "pingpong"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: exercises
+stringData:
+  POSTGRES_PASSWORD: "changeme"

@@ -17,8 +17,14 @@ spec:
         - name: ping-pong
           image: ping-pong:1.0
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: ping-pong-config
           env:
-            - name: PORT
-              value: "8081"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
           ports:
             - containerPort: 8081
