@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-backend-config
+  namespace: project
+data:
+  PORT: "3000"
+  DB_HOST: "todo-postgres"
+  DB_PORT: "5432"
+  DB_NAME: "todos"
+  DB_USER: "todos"

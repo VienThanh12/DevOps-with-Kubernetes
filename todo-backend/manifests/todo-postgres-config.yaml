@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-postgres-config
+  namespace: project
+data:
+  POSTGRES_DB: "todos"
+  POSTGRES_USER: "todos"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: todo-postgres-secret
+  namespace: project
+stringData:
+  POSTGRES_PASSWORD: "changeme"

@@ -1,9 +1,41 @@
 const http = require("http");
+const { Pool } = require("pg");
 
-const PORT = parseInt(process.env.PORT || "3000", 10);
+function mustEnv(name) {
+  const v = process.env[name];
+  if (!v) {
+    throw new Error(`Missing env: ${name}`);
+  }
+  return v;
+}
 
-/** In-memory store */
-const todos = [];
+const PORT = parseInt(mustEnv("PORT"), 10);
+const DB_HOST = mustEnv("DB_HOST");
+const DB_PORT = parseInt(mustEnv("DB_PORT"), 10);
+const DB_NAME = mustEnv("DB_NAME");
+const DB_USER = mustEnv("DB_USER");
+const DB_PASSWORD = mustEnv("DB_PASSWORD");
+
+const pool = new Pool({
+  host: DB_HOST,
+  port: DB_PORT,
+  database: DB_NAME,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  max: 5,
+  idleTimeoutMillis: 10000,
+});
+
+async function ensureSchema() {
+  const client = await pool.connect();
+  try {
+    await client.query(
+      "CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, text VARCHAR(140) NOT NULL)"
+    );
+  } finally {
+    client.release();
+  }
+}
 
 function send(res, code, body, headers = {}) {
   const buf =
@@ -53,7 +85,15 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
   if (req.method === "GET" && req.url === "/todos") {
-    return send(res, 200, { todos });
+    (async () => {
+      try {
+        const { rows } = await pool.query("SELECT id, text FROM todos ORDER BY id ASC");
+        return send(res, 200, { todos: rows });
+      } catch (e) {
+        return send(res, 500, { error: "db error" });
+      }
+    })();
+    return;
   }
   if (req.method === "POST" && req.url === "/todos") {
     return parseBody(req, (err, body) => {
@@ -67,8 +107,15 @@ const server = http.createServer((req, res) => {
       if (!text || text.length === 0 || text.length > 140) {
         return send(res, 400, { error: "Todo must be 1..140 chars" });
       }
-      todos.push(text);
-      return send(res, 201, { ok: true, count: todos.length });
+      (async () => {
+        try {
+          await pool.query("INSERT INTO todos (text) VALUES ($1)", [text]);
+          const { rows } = await pool.query("SELECT COUNT(*) AS count FROM todos");
+          return send(res, 201, { ok: true, count: parseInt(rows[0].count, 10) });
+        } catch (e) {
+          return send(res, 500, { error: "db error" });
+        }
+      })();
     });
   }
   if (req.method === "GET" && req.url === "/healthz") {
@@ -77,6 +124,13 @@ const server = http.createServer((req, res) => {
   send(res, 404, "Not Found\n");
 });
 
-server.listen(PORT, () => {
-  console.log(`todo-backend listening on ${PORT}`);
-});
+ensureSchema()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`todo-backend listening on ${PORT}`);
+    });
+  })
+  .catch((e) => {
+    console.error("Failed to init DB schema:", e);
+    process.exit(1);
+  });
