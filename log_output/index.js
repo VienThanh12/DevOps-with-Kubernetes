@@ -26,6 +26,13 @@ const IMAGE_FETCH_TIMEOUT_MS = parseInt(
 );
 const IMAGE_RETRY_MS = parseInt(process.env.IMAGE_RETRY_MS || "30000", 10);
 const IMAGE_USE_CURL = (process.env.IMAGE_USE_CURL || "auto").toLowerCase(); // auto|true|false
+const CONFIG_DIR = process.env.CONFIG_DIR || "/config";
+const MESSAGE = process.env.MESSAGE || "";
+const INFO_FILE = path.join(CONFIG_DIR, "information.txt");
+let infoFileContent = "";
+try {
+  infoFileContent = fs.readFileSync(INFO_FILE, "utf8");
+} catch {}
 function parseNoProxy() {
   const np = process.env.NO_PROXY || process.env.no_proxy || "";
   return np
@@ -58,6 +65,14 @@ try {
 console.log(`Log output started. Random string: ${randomString}`);
 console.log(`Fetching ping-pong via: ${PING_PONG_URL}`);
 console.log(`Image cache: ${IMAGE_FILE} (TTL ${IMAGE_TTL_MIN} min)`);
+if (MESSAGE) {
+  console.log(`env variable: MESSAGE=${MESSAGE}`);
+}
+if (infoFileContent) {
+  console.log(`file content: ${infoFileContent.trim()}`);
+} else {
+  console.log("information.txt not found or empty");
+}
 try {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 } catch {}
@@ -89,6 +104,8 @@ const server = http.createServer((req, res) => {
         timestamp: new Date().toISOString(),
         randomString,
         pingPongCount: err ? 0 : data.count,
+        message: MESSAGE,
+        informationFile: infoFileContent,
       };
       const body = JSON.stringify(payload);
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -119,6 +136,8 @@ const server = http.createServer((req, res) => {
 <body>
   <h1>Log Output</h1>
   <p>Random string: ${randomString}</p>
+  <p>MESSAGE: ${MESSAGE || "(none)"}</p>
+  <pre>${(infoFileContent || "").trim()}</pre>
   <p><a href="/status">JSON status</a> | <a href="/pingpong">Ping-pong</a></p>
 
   <h1> <b> The project App </b></h1>

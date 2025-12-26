@@ -24,5 +24,23 @@ spec:
               value: "http://ping-pong-svc:8081/pingpong"
             - name: IMAGE_FETCH_DISABLED
               value: "true"
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: log-output-config
+                  key: MESSAGE
+            - name: CONFIG_DIR
+              value: "/config"
           ports:
             - containerPort: 3000
+          volumeMounts:
+            - name: log-output-config-vol
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: log-output-config-vol
+          configMap:
+            name: log-output-config
+            items:
+              - key: information.txt
+                path: information.txt

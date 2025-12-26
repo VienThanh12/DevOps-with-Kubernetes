@@ -72,3 +72,4 @@
   ![2.4.2](./sample/2.4.2.png)
 
 - [2.5](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/2.5)
+  ![2.5](./sample/2.5.png)
