@@ -7,26 +7,21 @@ const { spawn } = require("child_process");
 const { randomUUID } = require("crypto");
 
 const randomString = randomUUID();
-const PORT = parseInt(process.env.PORT || "3000", 10);
-const DATA_DIR = process.env.DATA_DIR || "/data";
-const PING_PONG_URL =
-  process.env.PING_PONG_URL || "http://ping-pong-svc:8081/pingpong";
-const IMAGE_URL = "https://picsum.photos/1200";
-const IMAGE_HOST = new URL(IMAGE_URL).hostname;
-const IMAGE_FILE = process.env.IMAGE_FILE || path.join(DATA_DIR, "image.jpg");
-const META_FILE =
-  process.env.META_FILE || path.join(DATA_DIR, "image-meta.json");
-const IMAGE_TTL_MIN = parseInt(process.env.IMAGE_TTL_MIN || "10", 10);
-const IMAGE_TTL_MS = IMAGE_TTL_MIN * 60 * 1000;
+const PORT = parseInt(process.env.PORT, 10);
+const DATA_DIR = process.env.DATA_DIR;
+const PING_PONG_URL = process.env.PING_PONG_URL;
+const IMAGE_URL = process.env.IMAGE_URL;
+const IMAGE_HOST = IMAGE_URL ? new URL(IMAGE_URL).hostname : "";
+const IMAGE_FILE = process.env.IMAGE_FILE;
+const META_FILE = process.env.META_FILE;
+const IMAGE_TTL_MIN = parseInt(process.env.IMAGE_TTL_MIN, 10);
+const IMAGE_TTL_MS = (IMAGE_TTL_MIN || 0) * 60 * 1000;
 const IMAGE_FETCH_DISABLED =
-  (process.env.IMAGE_FETCH_DISABLED || "false").toLowerCase() === "true";
-const IMAGE_FETCH_TIMEOUT_MS = parseInt(
-  process.env.IMAGE_FETCH_TIMEOUT_MS || "5000",
-  10
-);
-const IMAGE_RETRY_MS = parseInt(process.env.IMAGE_RETRY_MS || "30000", 10);
-const IMAGE_USE_CURL = (process.env.IMAGE_USE_CURL || "auto").toLowerCase(); // auto|true|false
-const CONFIG_DIR = process.env.CONFIG_DIR || "/config";
+  (process.env.IMAGE_FETCH_DISABLED || "").toLowerCase() === "true";
+const IMAGE_FETCH_TIMEOUT_MS = parseInt(process.env.IMAGE_FETCH_TIMEOUT_MS, 10);
+const IMAGE_RETRY_MS = parseInt(process.env.IMAGE_RETRY_MS, 10);
+const IMAGE_USE_CURL = (process.env.IMAGE_USE_CURL || "").toLowerCase(); // auto|true|false
+const CONFIG_DIR = process.env.CONFIG_DIR;
 const MESSAGE = process.env.MESSAGE || "";
 const INFO_FILE = path.join(CONFIG_DIR, "information.txt");
 let infoFileContent = "";
@@ -73,12 +68,25 @@ if (infoFileContent) {
 } else {
   console.log("information.txt not found or empty");
 }
+if (!PORT || Number.isNaN(PORT)) {
+  console.error("PORT environment variable must be set to a valid number");
+  process.exit(1);
+}
+if (!DATA_DIR) {
+  console.error("DATA_DIR environment variable must be set");
+  process.exit(1);
+}
+if (!IMAGE_FILE || !META_FILE) {
+  console.error("IMAGE_FILE and META_FILE environment variables must be set");
+  process.exit(1);
+}
 try {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 } catch {}
 
 function fetchPingPong(cb) {
   try {
+    if (!PING_PONG_URL) throw new Error("PING_PONG_URL not configured");
     const url = new URL(PING_PONG_URL);
     const lib = url.protocol === "https:" ? https : http;
     const req = lib.get(PING_PONG_URL, (resp) => {
@@ -206,7 +214,7 @@ function getWithRedirects(url, cb, redirects = 0) {
 }
 
 function fetchAndStoreImage(cb) {
-  if (IMAGE_FETCH_DISABLED) {
+  if (IMAGE_FETCH_DISABLED || !IMAGE_URL) {
     return cb(new Error("Image fetch disabled"));
   }
   if (fetchInProgress) return cb(null, false);

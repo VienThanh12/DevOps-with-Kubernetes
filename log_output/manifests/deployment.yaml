@@ -17,20 +17,9 @@ spec:
         - name: log-output
           image: log-output:1.0
           imagePullPolicy: IfNotPresent
-          env:
-            - name: PORT
-              value: "3000"
-            - name: PING_PONG_URL
-              value: "http://ping-pong-svc:8081/pingpong"
-            - name: IMAGE_FETCH_DISABLED
-              value: "true"
-            - name: MESSAGE
-              valueFrom:
-                configMapKeyRef:
-                  name: log-output-config
-                  key: MESSAGE
-            - name: CONFIG_DIR
-              value: "/config"
+          envFrom:
+            - configMapRef:
+                name: log-output-config
           ports:
             - containerPort: 3000
           volumeMounts:

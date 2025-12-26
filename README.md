@@ -8,7 +8,6 @@
 
 ![1.1](./sample/1.1.png)
 
-
 - [1.2.](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.2)
 
 ![1.2](./sample/1.2.png)
@@ -74,3 +73,6 @@
 
 - [2.5](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/2.5)
   ![2.5](./sample/2.5.png)
+
+- [2.6](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/2.6)
+  ![2.6](./sample/2.6.png)
