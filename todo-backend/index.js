@@ -125,8 +125,14 @@ const server = http.createServer((req, res) => {
       }
       const len = (text || "").length;
       if (!text || len === 0 || len > TODO_MAX_LEN) {
-        logEvent("todo_reject", { reason: "length", length: len, limit: TODO_MAX_LEN });
-        return send(res, 400, { error: `Todo must be 1..${TODO_MAX_LEN} chars` });
+        logEvent("todo_reject", {
+          reason: "length",
+          length: len,
+          limit: TODO_MAX_LEN,
+        });
+        return send(res, 400, {
+          error: `Todo must be 1..${TODO_MAX_LEN} chars`,
+        });
       }
       (async () => {
         try {
