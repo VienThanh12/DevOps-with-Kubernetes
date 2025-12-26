@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-random-reader
+  namespace: project
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: generator
+              image: todo-backend:1.0
+              imagePullPolicy: IfNotPresent
+              command: ["node", "/scripts/job.js"]
+              env:
+                - name: TODO_BACKEND_HOST
+                  value: "todo-backend-svc"
+                - name: TODO_BACKEND_PORT
+                  value: "2345"
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+          volumes:
+            - name: scripts
+              configMap:
+                name: todo-cronjob-scripts
+                items:
+                  - key: job.js
+                    path: job.js

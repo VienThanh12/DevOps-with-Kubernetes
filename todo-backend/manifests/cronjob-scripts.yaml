@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-cronjob-scripts
+  namespace: project
+data:
+  job.js: |
+    const https = require('https');
+    const http = require('http');
+
+    function getRandomArticleURL(cb) {
+      const opts = {
+        method: 'GET',
+        hostname: 'en.wikipedia.org',
+        path: '/wiki/Special:Random',
+        headers: {
+          'User-Agent': 'todo-cronjob/1.0'
+        }
+      };
+      const req = https.request(opts, (resp) => {
+        const code = resp.statusCode || 0;
+        const loc = resp.headers.location;
+        if (code >= 300 && code < 400 && loc) {
+          const url = loc.startsWith('http') ? loc : `https://en.wikipedia.org${loc}`;
+          cb(null, url);
+        } else if (code === 200) {
+          cb(null, 'https://en.wikipedia.org/wiki/Special:Random');
+        } else {
+          cb(new Error(`Unexpected status: ${code}`));
+        }
+      });
+      req.on('error', (e) => cb(e));
+      req.end();
+    }
+
+    function postTodo(url, cb) {
+      const host = process.env.TODO_BACKEND_HOST || 'todo-backend-svc';
+      const port = parseInt(process.env.TODO_BACKEND_PORT || '2345', 10);
+      const payload = JSON.stringify({ text: `Read ${url}` });
+      const opts = {
+        method: 'POST',
+        hostname: host,
+        port,
+        path: '/todos',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      };
+      const req = http.request(opts, (resp) => {
+        let buf = '';
+        resp.on('data', (d) => buf += String(d));
+        resp.on('end', () => cb(null, { statusCode: resp.statusCode || 0, body: buf }));
+      });
+      req.on('error', (e) => cb(e));
+      req.write(payload);
+      req.end();
+    }
+
+    getRandomArticleURL((err, url) => {
+      if (err) {
+        console.error('Failed to get random article:', err.message || String(err));
+        process.exit(1);
+      }
+      console.log('Random article:', url);
+      postTodo(url, (err, resp) => {
+        if (err) {
+          console.error('Failed to post todo:', err.message || String(err));
+          process.exit(1);
+        }
+        console.log('Todo response:', resp.statusCode, resp.body);
+        process.exit(0);
+      });
+    });
