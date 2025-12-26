@@ -10,6 +10,7 @@ function mustEnv(name) {
 }
 
 const PORT = parseInt(mustEnv("PORT"), 10);
+const TODO_MAX_LEN = parseInt(process.env.TODO_MAX_LEN || "140", 10);
 const DB_HOST = mustEnv("DB_HOST");
 const DB_PORT = parseInt(mustEnv("DB_PORT"), 10);
 const DB_NAME = mustEnv("DB_NAME");
@@ -55,6 +56,19 @@ function send(res, code, body, headers = {}) {
   res.end(buf);
 }
 
+function logEvent(type, payload = {}) {
+  const entry = {
+    ts: new Date().toISOString(),
+    type,
+    ...payload,
+  };
+  try {
+    console.log(JSON.stringify(entry));
+  } catch {
+    console.log(String(type));
+  }
+}
+
 function parseBody(req, cb) {
   let data = "";
   req.on("data", (chunk) => (data += chunk));
@@ -75,6 +89,7 @@ function parseBody(req, cb) {
 }
 
 const server = http.createServer((req, res) => {
+  logEvent("request", { method: req.method, path: req.url });
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
@@ -90,8 +105,10 @@ const server = http.createServer((req, res) => {
         const { rows } = await pool.query(
           "SELECT id, text FROM todos ORDER BY id ASC"
         );
+        logEvent("todos_list", { count: rows.length });
         return send(res, 200, { todos: rows });
       } catch (e) {
+        logEvent("db_error", { op: "list", message: e && e.message });
         return send(res, 500, { error: "db error" });
       }
     })();
@@ -106,8 +123,10 @@ const server = http.createServer((req, res) => {
       } else if (body && typeof body.text === "string") {
         text = body.text.trim();
       }
-      if (!text || text.length === 0 || text.length > 140) {
-        return send(res, 400, { error: "Todo must be 1..140 chars" });
+      const len = (text || "").length;
+      if (!text || len === 0 || len > TODO_MAX_LEN) {
+        logEvent("todo_reject", { reason: "length", length: len, limit: TODO_MAX_LEN });
+        return send(res, 400, { error: `Todo must be 1..${TODO_MAX_LEN} chars` });
       }
       (async () => {
         try {
@@ -115,19 +134,23 @@ const server = http.createServer((req, res) => {
           const { rows } = await pool.query(
             "SELECT COUNT(*) AS count FROM todos"
           );
+          logEvent("todo_accept", { length: len });
           return send(res, 201, {
             ok: true,
             count: parseInt(rows[0].count, 10),
           });
         } catch (e) {
+          logEvent("db_error", { op: "insert", message: e && e.message });
           return send(res, 500, { error: "db error" });
         }
       })();
     });
   }
   if (req.method === "GET" && req.url === "/healthz") {
+    logEvent("healthz");
     return send(res, 200, { ok: true });
   }
+  logEvent("not_found", { path: req.url });
   send(res, 404, "Not Found\n");
 });
 

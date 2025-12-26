@@ -9,3 +9,4 @@ data:
   DB_PORT: "5432"
   DB_NAME: "todos"
   DB_USER: "todos"
+  TODO_MAX_LEN: "140"
