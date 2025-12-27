@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: ping-pong:1.0
+          image: europe-north1-docker.pkg.dev/dwk-gke-482511/dwk-repo/ping-pong:latest
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
