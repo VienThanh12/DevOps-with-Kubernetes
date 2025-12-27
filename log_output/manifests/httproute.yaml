@@ -1,0 +1,24 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: apps-route
+  namespace: exercises
+spec:
+  parentRefs:
+    - name: my-gateway
+      namespace: exercises
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /pingpong
+      backendRefs:
+        - name: ping-pong-svc
+          port: 8081
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: log-output-svc
+          port: 3000
