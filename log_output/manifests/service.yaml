@@ -2,10 +2,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: log-output-svc
+  namespace: exercises
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   selector:
     app: log-output
   ports:
-    - protocol: TCP
-      port: 3000 # ClusterIP port
-      targetPort: 3000 # App container port
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP

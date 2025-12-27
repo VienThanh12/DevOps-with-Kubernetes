@@ -1,13 +1,14 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: log-output-ing
+  name: apps-ingress
+  namespace: exercises
   annotations:
-    kubernetes.io/ingress.class: traefik
+    kubernetes.io/ingress.class: gce
 spec:
+  ingressClassName: gce
   rules:
-    - host: log.local
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix
