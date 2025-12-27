@@ -76,7 +76,7 @@ class PingPongHandler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self):
-        if self.path == "/pingpong":
+        if self.path in ("/pingpong", "/"):
             c = inc_count()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; charset=utf-8")
@@ -88,19 +88,6 @@ class PingPongHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(f"{{\"count\": {c}}}".encode("utf-8"))
-        elif self.path == "/":
-            # Ingress health checks expect 200 at '/'
-            c = get_count()
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.end_headers()
-            body = (
-                "<!doctype html><html><head><meta charset=\"utf-8\"><title>Ping-pong</title></head>"
-                "<body><h1>Ping-pong service</h1>"
-                f"<p>Try <a href=\"/pingpong\">/pingpong</a> (current count: {c})</p>"
-                "</body></html>"
-            )
-            self.wfile.write(body.encode("utf-8"))
         else:
             self.send_response(404)
             self.end_headers()

@@ -105,3 +105,7 @@
   ![3.3.1](./sample/3.3.1.png)
   ![3.3.2](./sample/3.3.2.png)
   ![3.3.2](./sample/3.3.3.png)
+
+- [3.4](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/3.4)
+
+  ![3.4](./sample/3.4.png)
