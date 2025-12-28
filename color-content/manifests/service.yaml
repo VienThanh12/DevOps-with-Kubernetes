@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: colorcontent-svc
+  namespace: exercises
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+spec:
+  type: ClusterIP
+  selector:
+    app: colorcontent
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80

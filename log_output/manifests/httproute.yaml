@@ -24,6 +24,19 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /colorcontent
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: colorcontent-svc
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
             value: /
       backendRefs:
         - name: log-output-svc

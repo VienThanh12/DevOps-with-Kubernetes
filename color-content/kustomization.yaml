@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - manifests/deployment.yaml
+  - manifests/service.yaml
+images:
+  - name: colorcontent
+    newName: europe-north1-docker.pkg.dev/dwk-gke-482511/dwk-repo/colorcontent
+    newTag: latest

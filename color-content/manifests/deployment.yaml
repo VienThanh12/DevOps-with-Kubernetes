@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: colorcontent
+  namespace: exercises
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: colorcontent
+  template:
+    metadata:
+      labels:
+        app: colorcontent
+    spec:
+      containers:
+        - name: colorcontent
+          image: europe-north1-docker.pkg.dev/dwk-gke-482511/dwk-repo/colorcontent:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
