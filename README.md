@@ -121,3 +121,110 @@
 - [3.7](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/3.7)
 
 - [3.8](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/3.8)
+
+- [3.9](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/3.9)
+
+## DBaaS (Cloud SQL) vs DIY PostgreSQL on GKE (PVC)
+
+### 1. Initialization & Setup
+
+**DBaaS (Google Cloud SQL)**
+
+- ✅ Fast to initialize (minutes via UI / CLI / Terraform)
+- ✅ No need to manage storage, replication, or failover
+- ❌ Requires networking setup (private IP, Cloud SQL Proxy / connector)
+
+**DIY (PostgreSQL on GKE with PVCs)**
+
+- ❌ More setup work (StatefulSets, PVCs, StorageClasses)
+- ❌ High availability and failover must be designed manually
+- ✅ Full control over database configuration and deployment
+
+---
+
+### 2. Maintenance & Operations
+
+**DBaaS**
+
+- ✅ Automatic updates, patching, and security fixes
+- ✅ Managed high availability and failover
+- ❌ Limited control over internal PostgreSQL configuration
+- ❌ Vendor lock-in to Google Cloud
+
+**DIY**
+
+- ❌ Manual upgrades, monitoring, and failure recovery
+- ❌ Requires strong Kubernetes and database expertise
+- ✅ Full control over PostgreSQL version and tuning
+- ✅ Easier portability across environments
+
+---
+
+### 3. Backups & Recovery
+
+**DBaaS**
+
+- ✅ Automated daily backups
+- ✅ Point-in-time recovery supported
+- ✅ Simple restore via UI or CLI
+- ❌ Limited customization of backup strategy
+
+**DIY**
+
+- ❌ Backups must be implemented manually (pg_dump, cronjobs, operators)
+- ❌ Restore process is more complex and error-prone
+- ✅ Full control over backup format, schedule, and storage location
+
+---
+
+### 4. Scalability & Reliability
+
+**DBaaS**
+
+- ✅ Easy vertical scaling (CPU / RAM)
+- ✅ Built-in replication and high availability
+- ❌ Limited horizontal scaling (read replicas only)
+
+**DIY**
+
+- ❌ Scaling and HA require additional tooling (operators, Patroni)
+- ❌ Greater risk of misconfiguration
+- ✅ Flexible for advanced or custom architectures
+
+---
+
+### 5. Costs
+
+**DBaaS**
+
+- ❌ Higher service cost due to managed features
+- ❌ Pay for HA, backups, and availability even when underutilized
+- ✅ Lower operational cost (less maintenance effort)
+
+**DIY**
+
+- ✅ Potentially lower infrastructure cost
+- ❌ Higher operational and engineering effort
+- ❌ Risk of downtime increases indirect costs
+
+---
+
+### 6. When to Choose Which
+
+**Choose DBaaS when:**
+
+- Reliability and data safety are top priorities
+- Operational effort must be minimized
+- Database expertise is limited
+
+**Choose DIY when:**
+
+- Full control and portability are required
+- You want to learn or customize PostgreSQL deeply
+- Cost optimization is critical and team expertise is sufficient
+
+---
+
+### Conclusion
+
+DBaaS favors **simplicity, reliability, and low operational overhead** at a higher service cost, while DIY PostgreSQL on GKE offers **greater control and flexibility** but requires **significantly more maintenance and operational expertise**.
