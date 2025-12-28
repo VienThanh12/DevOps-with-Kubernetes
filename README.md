@@ -113,3 +113,7 @@
 - [3.5](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/3.5)
 
   ![3.5](./sample/3.5.png)
+
+- [3.6](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/3.6)
+
+  ![3.6](./sample/3.6.png)
