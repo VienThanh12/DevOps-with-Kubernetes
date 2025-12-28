@@ -1,4 +1,4 @@
-name: Release application
+name: Release application to GKE
 
 on:
   push:
