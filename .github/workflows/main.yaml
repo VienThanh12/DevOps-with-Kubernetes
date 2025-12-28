@@ -54,10 +54,23 @@ jobs:
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v2.1.0
 
+      - name: Determine target namespace
+        run: |
+          if [ "${{ env.BRANCH }}" = "main" ]; then
+            echo "NAMESPACE=project" >> $GITHUB_ENV
+          else
+            echo "NAMESPACE=${{ env.BRANCH }}" >> $GITHUB_ENV
+          fi
+
+      - name: Ensure namespace exists
+        run: |
+          kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE"
+
       - name: Deploy
         working-directory: color-content
         run: |
           kustomize edit set image colorcontent="$IMAGE_TAG"
+          kustomize edit set namespace "$NAMESPACE"
           kustomize build . | kubectl apply -f -
-          kubectl rollout status deployment "${{ env.SERVICE }}" -n exercises
-          kubectl get services -o wide -n exercises
+          kubectl rollout status deployment "${{ env.SERVICE }}" -n "$NAMESPACE"
+          kubectl get services -o wide -n "$NAMESPACE"
