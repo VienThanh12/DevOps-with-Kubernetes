@@ -26,6 +26,13 @@ spec:
             - name: log-output-config-vol
               mountPath: /config
               readOnly: true
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
       volumes:
         - name: log-output-config-vol
           configMap:

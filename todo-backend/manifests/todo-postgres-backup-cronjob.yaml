@@ -89,6 +89,13 @@ spec:
                 - name: gcp-creds
                   mountPath: /var/secrets/google
                   readOnly: true
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1000m"
+                  memory: "1Gi"
 
           volumes:
             - name: gcp-creds
