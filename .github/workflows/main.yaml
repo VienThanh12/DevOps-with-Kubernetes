@@ -61,11 +61,6 @@ jobs:
           else
             echo "NAMESPACE=${{ env.BRANCH }}" >> $GITHUB_ENV
           fi
-
-      - name: Ensure namespace exists
-        run: |
-          kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || kubectl create namespace "$NAMESPACE"
-
       - name: Deploy
         working-directory: color-content
         run: |
