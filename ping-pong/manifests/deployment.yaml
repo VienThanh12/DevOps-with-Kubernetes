@@ -28,6 +28,13 @@ spec:
                   key: POSTGRES_PASSWORD
           ports:
             - containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /count
+              port: 8081
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               cpu: "50m"

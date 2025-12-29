@@ -33,6 +33,13 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /pingpong
+              port: 3000
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 3
       volumes:
         - name: log-output-config-vol
           configMap:
