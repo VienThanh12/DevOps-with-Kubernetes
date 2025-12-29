@@ -156,6 +156,19 @@ const server = http.createServer((req, res) => {
     logEvent("healthz");
     return send(res, 200, { ok: true });
   }
+  if (req.method === "GET" && req.url === "/ready") {
+    (async () => {
+      try {
+        await pool.query("SELECT 1");
+        logEvent("ready_ok");
+        return send(res, 200, { ready: true });
+      } catch (e) {
+        logEvent("ready_fail", { message: e && e.message });
+        return send(res, 503, { ready: false });
+      }
+    })();
+    return;
+  }
   logEvent("not_found", { path: req.url });
   send(res, 404, "Not Found\n");
 });
