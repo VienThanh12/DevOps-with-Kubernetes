@@ -1,0 +1,96 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-postgres-backup
+  namespace: project
+spec:
+  schedule: "0 0 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+
+          containers:
+            - name: backup
+              image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+              imagePullPolicy: IfNotPresent
+
+              command: ["bash", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+
+                  echo "[backup] Installing postgres client..."
+                  apt-get update -y \
+                    && apt-get install -y postgresql-client \
+                    && rm -rf /var/lib/apt/lists/*
+
+                  echo "[backup] Authenticating to GCP..."
+                  gcloud auth activate-service-account \
+                    --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+
+                  DATE=$(date -u +%Y%m%d-%H%M%S)
+                  FILE="/tmp/todos-${DATE}.sql.gz"
+
+                  echo "[backup] Starting pg_dump..."
+                  PGPASSWORD="$PGPASSWORD" pg_dump \
+                    -h "$PGHOST" \
+                    -p "$PGPORT" \
+                    -U "$PGUSER" \
+                    -d "$PGDATABASE" \
+                    | gzip -9 > "$FILE"
+
+                  echo "[backup] Uploading to GCS..."
+                  gsutil cp "$FILE" "${GCS_BUCKET}/todos/${DATE}.sql.gz"
+
+                  echo "[backup] Backup completed successfully"
+
+              env:
+                - name: PGHOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-backend-config
+                      key: DB_HOST
+                - name: PGPORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-backend-config
+                      key: DB_PORT
+                - name: PGDATABASE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-backend-config
+                      key: DB_NAME
+                - name: PGUSER
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-backend-config
+                      key: DB_USER
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: todo-postgres-secret
+                      key: POSTGRES_PASSWORD
+                - name: GCS_BUCKET
+                  valueFrom:
+                    configMapKeyRef:
+                      name: todo-backup-config
+                      key: GCS_BUCKET
+                - name: GOOGLE_APPLICATION_CREDENTIALS
+                  value: /var/secrets/google/key.json
+
+              volumeMounts:
+                - name: gcp-creds
+                  mountPath: /var/secrets/google
+                  readOnly: true
+
+          volumes:
+            - name: gcp-creds
+              secret:
+                secretName: gcs-sa-key

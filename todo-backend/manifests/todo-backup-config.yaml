@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-backup-config
+  namespace: project
+data:
+  # Set this to your GCS bucket URL, e.g. gs://my-dwk-backups
+  GCS_BUCKET: "gs://my-dwk-backups"
+  DB_HOST: postgres.exercises.svc.cluster.local
+  DB_PORT: "5432"
+  DB_NAME: todos
+  DB_USER: postgres

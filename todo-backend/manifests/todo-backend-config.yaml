@@ -4,9 +4,7 @@ metadata:
   name: todo-backend-config
   namespace: project
 data:
-  PORT: "3000"
-  DB_HOST: "todo-postgres"
+  DB_HOST: postgres.exercises.svc.cluster.local
   DB_PORT: "5432"
-  DB_NAME: "todos"
-  DB_USER: "todos"
-  TODO_MAX_LEN: "140"
+  DB_NAME: pingpong
+  DB_USER: pingpong
