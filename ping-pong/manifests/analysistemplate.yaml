@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: namespace-cpu-guard
+  namespace: exercises
+spec:
+  metrics:
+    - name: namespace-cpu-usage-5m
+      # Wait a bit so Prometheus has fresh samples for the new ReplicaSet
+      initialDelay: 2m
+      interval: 30s
+      count: 10 # 10 * 30s = 5 minutes of checks
+      successCondition: result < 0.50 # threshold in cores; adjust as needed
+      failureCondition: result >= 0.50
+      provider:
+        prometheus:
+          # e.g. kube-prometheus-stack-prometheus.prometheus.svc.cluster.local:9090
+          address: http://kube-prometheus-stack-1766-prometheus.prometheus.svc.cluster.local:9090
+          query: |
+            scalar(
+              sum(
+                rate(container_cpu_usage_seconds_total{namespace="exercises",container!="",container!="POD"}[5m])
+              )
+            )

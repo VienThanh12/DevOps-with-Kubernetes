@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: ping-pong
+  namespace: exercises
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-pong
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: {duration: 60}
+        - analysis:
+            templates:
+              - templateName: namespace-cpu-guard
+        - setWeight: 50
+        - pause: {duration: 60}
+        - analysis:
+            templates:
+              - templateName: namespace-cpu-guard
+  template:
+    metadata:
+      labels:
+        app: ping-pong
+    spec:
+      containers:
+        - name: ping-pong
+          image: europe-north1-docker.pkg.dev/dwk-gke-482511/dwk-repo/ping-pong:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: ping-pong-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /count
+              port: 8081
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
