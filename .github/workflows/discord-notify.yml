@@ -36,12 +36,12 @@ jobs:
     if: ${{ success() && github.ref == 'refs/heads/main' }}
     steps:
       - name: Post success to Discord
-        uses: Ilshidur/action-discord@v2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: tsickert/discord-webhook@v4
         with:
-          args: |
-            ✅ Deploy succeeded:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          username: CI Bot
+          content: |
+            ✅ Deploy succeeded
             • Repo: ${{ github.repository }}
             • Ref:  ${{ github.ref_name }}
             • Commit: ${{ github.sha }}
@@ -57,12 +57,12 @@ jobs:
     if: ${{ failure() }}
     steps:
       - name: Post failure to Discord
-        uses: Ilshidur/action-discord@v2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: tsickert/discord-webhook@v4
         with:
-          args: |
-            ❌ Build/Deploy failed:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          username: CI Bot
+          content: |
+            ❌ Build/Deploy failed
             • Repo: ${{ github.repository }}
             • Ref:  ${{ github.ref_name }}
             • Commit: ${{ github.sha }}
