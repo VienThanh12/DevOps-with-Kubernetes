@@ -12,12 +12,12 @@ spec:
     canary:
       steps:
         - setWeight: 20
-        - pause: {duration: 60}
+        - pause: { duration: 60 }
         - analysis:
             templates:
               - templateName: namespace-cpu-guard
         - setWeight: 50
-        - pause: {duration: 60}
+        - pause: { duration: 60 }
         - analysis:
             templates:
               - templateName: namespace-cpu-guard
