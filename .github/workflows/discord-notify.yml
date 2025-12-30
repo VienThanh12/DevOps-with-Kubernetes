@@ -36,12 +36,12 @@ jobs:
     if: ${{ success() && github.ref == 'refs/heads/main' }}
     steps:
       - name: Post success to Discord
-        uses: tsickert/discord-webhook@v4
+        uses: sarisia/actions-status-discord@v1
         with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          username: CI Bot
-          content: |
-            ✅ Deploy succeeded
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: Deploy succeeded
+          description: |
+            ✅ New version deployed
             • Repo: ${{ github.repository }}
             • Ref:  ${{ github.ref_name }}
             • Commit: ${{ github.sha }}
@@ -57,12 +57,12 @@ jobs:
     if: ${{ failure() }}
     steps:
       - name: Post failure to Discord
-        uses: tsickert/discord-webhook@v4
+        uses: sarisia/actions-status-discord@v1
         with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          username: CI Bot
-          content: |
-            ❌ Build/Deploy failed
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: Build/Deploy failed
+          description: |
+            ❌ Failure details
             • Repo: ${{ github.repository }}
             • Ref:  ${{ github.ref_name }}
             • Commit: ${{ github.sha }}
