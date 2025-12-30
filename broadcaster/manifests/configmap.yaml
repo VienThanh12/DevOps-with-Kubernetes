@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: broadcaster-config
+  namespace: project
+data:
+  NATS_URL: nats://my-nats.default.svc.cluster.local:4222
+  NATS_SUBJECT: todos.events
+  NATS_QUEUE: broadcaster
+  EXTERNAL_TYPE: generic
+  WEBHOOK_URL: http://generic-webhook.project.svc.cluster.local/notify
+  WEBHOOK_USER: bot

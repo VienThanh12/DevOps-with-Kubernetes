@@ -4,7 +4,5 @@ metadata:
   name: todo-backend-config
   namespace: project
 data:
-  DB_HOST: todo-postgres
-  DB_PORT: "5432"
-  DB_NAME: todos
-  DB_USER: todos
+  NATS_URL: nats://nats:4222
+  NATS_SUBJECT: todos.events

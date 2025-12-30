@@ -14,4 +14,3 @@ metadata:
   namespace: project
 stringData:
   POSTGRES_PASSWORD: "changeme"
-´

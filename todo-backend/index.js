@@ -1,5 +1,6 @@
 const http = require("http");
-const { Pool } = require("pg");
+let natsConnect = null;
+let natsStringCodec = null;
 
 function mustEnv(name) {
   const v = process.env[name];
@@ -11,33 +12,59 @@ function mustEnv(name) {
 
 const PORT = parseInt(mustEnv("PORT"), 10);
 const TODO_MAX_LEN = parseInt(process.env.TODO_MAX_LEN || "140", 10);
-const DB_HOST = mustEnv("DB_HOST");
-const DB_PORT = parseInt(mustEnv("DB_PORT"), 10);
-const DB_NAME = mustEnv("DB_NAME");
-const DB_USER = mustEnv("DB_USER");
-const DB_PASSWORD = mustEnv("DB_PASSWORD");
 
-const pool = new Pool({
-  host: DB_HOST,
-  port: DB_PORT,
-  database: DB_NAME,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  max: 5,
-  idleTimeoutMillis: 10000,
-});
+const NATS_URL = process.env.NATS_URL || null;
+const NATS_SUBJECT = process.env.NATS_SUBJECT || "todos.events";
+let nc = null;
+let sc = null;
 
-async function ensureSchema() {
-  const client = await pool.connect();
+const todos = [];
+let nextId = 1;
+
+// No database; keep simple in-memory store.
+
+async function setupNats() {
+  if (!NATS_URL) {
+    console.warn("NATS disabled: NATS_URL not set");
+    return;
+  }
   try {
-    await client.query(
-      "CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, text VARCHAR(140) NOT NULL, done BOOLEAN NOT NULL DEFAULT FALSE)"
-    );
-    await client.query(
-      "ALTER TABLE IF EXISTS todos ADD COLUMN IF NOT EXISTS done BOOLEAN NOT NULL DEFAULT FALSE"
-    );
-  } finally {
-    client.release();
+    if (!natsConnect || !natsStringCodec) {
+      try {
+        const nats = require("nats");
+        natsConnect = nats.connect;
+        natsStringCodec = nats.StringCodec;
+      } catch (e) {
+        console.error(
+          "nats module not available; skipping NATS setup:",
+          e && e.message
+        );
+        return;
+      }
+    }
+    nc = await natsConnect({ servers: NATS_URL });
+    sc = natsStringCodec();
+    console.log(`Connected to NATS at ${NATS_URL}`);
+    (async () => {
+      try {
+        const err = await nc.closed();
+        if (err) console.error("NATS connection closed:", err.message || err);
+      } catch (e) {
+        // ignore
+      }
+    })();
+  } catch (e) {
+    console.error("Failed to connect to NATS:", e && e.message);
+  }
+}
+
+function publishEvent(type, payload = {}) {
+  try {
+    if (!nc || !sc) return;
+    const msg = { type, payload, ts: new Date().toISOString() };
+    nc.publish(NATS_SUBJECT, sc.encode(JSON.stringify(msg)));
+  } catch (e) {
+    console.error("NATS publish error:", e && e.message);
   }
 }
 
@@ -103,19 +130,8 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
   if (req.method === "GET" && req.url === "/todos") {
-    (async () => {
-      try {
-        const { rows } = await pool.query(
-          "SELECT id, text, done FROM todos ORDER BY id ASC"
-        );
-        logEvent("todos_list", { count: rows.length });
-        return send(res, 200, { todos: rows });
-      } catch (e) {
-        logEvent("db_error", { op: "list", message: e && e.message });
-        return send(res, 500, { error: "db error" });
-      }
-    })();
-    return;
+    logEvent("todos_list", { count: todos.length });
+    return send(res, 200, { todos });
   }
   if (req.method === "PUT" && /^\/todos\/\d+$/.test(req.url)) {
     const m = req.url.match(/^\/todos\/(\d+)$/);
@@ -129,23 +145,15 @@ const server = http.createServer((req, res) => {
           error: "Body must include boolean field 'done'",
         });
       }
-      (async () => {
-        try {
-          const { rows } = await pool.query(
-            "UPDATE todos SET done = $1 WHERE id = $2 RETURNING id, text, done",
-            [done, id]
-          );
-          if (!rows || rows.length === 0) {
-            logEvent("todo_update_not_found", { id });
-            return send(res, 404, { error: "todo not found" });
-          }
-          logEvent("todo_update", { id, done });
-          return send(res, 200, { todo: rows[0] });
-        } catch (e) {
-          logEvent("db_error", { op: "update", message: e && e.message });
-          return send(res, 500, { error: "db error" });
-        }
-      })();
+      const idx = todos.findIndex((t) => t.id === id);
+      if (idx === -1) {
+        logEvent("todo_update_not_found", { id });
+        return send(res, 404, { error: "todo not found" });
+      }
+      todos[idx].done = done;
+      logEvent("todo_update", { id, done });
+      publishEvent("todo_updated", todos[idx]);
+      return send(res, 200, { todo: todos[idx] });
     });
   }
   if (req.method === "POST" && req.url === "/todos") {
@@ -168,22 +176,14 @@ const server = http.createServer((req, res) => {
           error: `Todo must be 1..${TODO_MAX_LEN} chars`,
         });
       }
-      (async () => {
-        try {
-          await pool.query("INSERT INTO todos (text) VALUES ($1)", [text]);
-          const { rows } = await pool.query(
-            "SELECT COUNT(*) AS count FROM todos"
-          );
-          logEvent("todo_accept", { length: len });
-          return send(res, 201, {
-            ok: true,
-            count: parseInt(rows[0].count, 10),
-          });
-        } catch (e) {
-          logEvent("db_error", { op: "insert", message: e && e.message });
-          return send(res, 500, { error: "db error" });
-        }
-      })();
+      const created = { id: nextId++, text, done: false };
+      todos.push(created);
+      logEvent("todo_accept", { length: len });
+      publishEvent("todo_created", created);
+      return send(res, 201, {
+        ok: true,
+        count: todos.length,
+      });
     });
   }
   if (req.method === "GET" && req.url === "/healthz") {
@@ -191,29 +191,15 @@ const server = http.createServer((req, res) => {
     return send(res, 200, { ok: true });
   }
   if (req.method === "GET" && req.url === "/ready") {
-    (async () => {
-      try {
-        await pool.query("SELECT 1");
-        logEvent("ready_ok");
-        return send(res, 200, { ready: true });
-      } catch (e) {
-        logEvent("ready_fail", { message: e && e.message });
-        return send(res, 503, { ready: false });
-      }
-    })();
-    return;
+    logEvent("ready_ok");
+    return send(res, 200, { ready: true });
   }
   logEvent("not_found", { path: req.url });
   send(res, 404, "Not Found\n");
 });
 
-ensureSchema()
-  .then(() => {
-    server.listen(PORT, () => {
-      console.log(`todo-backend listening on ${PORT}`);
-    });
-  })
-  .catch((e) => {
-    console.error("Failed to init DB schema:", e);
-    process.exit(1);
+setupNats().finally(() => {
+  server.listen(PORT, () => {
+    console.log(`todo-backend listening on ${PORT}`);
   });
+});

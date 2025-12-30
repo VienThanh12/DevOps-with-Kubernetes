@@ -2,5 +2,3 @@ todo-backend/manifests/google-cloud-sdk/
 todo-backend/manifests/google-cloud-cli-linux-x86_64.tar.gz
 install_google_cloud_sdk.bash
 private-key.json
-.github
-.github/workflows/

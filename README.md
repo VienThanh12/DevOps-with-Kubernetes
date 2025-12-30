@@ -255,3 +255,38 @@ DBaaS favors **simplicity, reliability, and low operational overhead** at a high
 
 - [4.5](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/4.5)
   ![4.5](./sample/4.5.png)
+
+## Broadcaster Service
+
+- Publishes todo events from backend to NATS (`todos.events`).
+- Subscribes with queue group (`broadcaster`) to avoid duplicates across replicas.
+- Forwards messages to external services.
+
+### External Providers
+
+- Generic: set `EXTERNAL_TYPE=generic` and `WEBHOOK_URL` to your endpoint. Payload: `{ "user": "bot", "message": "..." }`.
+- Discord: set `EXTERNAL_TYPE=discord` and `WEBHOOK_URL` to your Discord webhook URL. Payload uses `content` + `username`.
+- Telegram: set `EXTERNAL_TYPE=telegram`, and provide `TELEGRAM_TOKEN` and `TELEGRAM_CHAT_ID` env vars. Uses Telegram Bot API `sendMessage`.
+
+### Configure and Deploy
+
+```bash
+# Backend (publishes to NATS)
+kubectl apply -n project -f todo-backend/manifests/todo-backend-config.yaml
+kubectl apply -n project -f todo-backend/manifests/todo-backend.yaml
+
+# Broadcaster (subscribes NATS and forwards)
+kubectl apply -n project -f broadcaster/manifests/configmap.yaml
+kubectl apply -n project -f broadcaster/manifests/deployment.yaml
+
+# Example: Discord
+kubectl set env -n project deploy/broadcaster EXTERNAL_TYPE=discord WEBHOOK_URL=<discord_webhook_url>
+
+# Example: Telegram
+kubectl set env -n project deploy/broadcaster EXTERNAL_TYPE=telegram TELEGRAM_TOKEN=<bot_token> TELEGRAM_CHAT_ID=<chat_id>
+
+kubectl rollout restart -n project deploy/broadcaster
+kubectl logs -n project deploy/broadcaster --tail=100 -f
+```
+
+Notes: NATS URL should be a resolvable service FQDN (e.g., `nats://my-nats.default.svc.cluster.local:4222`). Queue subscriptions ensure only one replica processes each event.

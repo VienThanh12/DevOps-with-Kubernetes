@@ -32,17 +32,19 @@ spec:
         - name: todo-backend
           image: todo-backend:1.0
           imagePullPolicy: IfNotPresent
-          envFrom:
-            - configMapRef:
-                name: todo-backend-config
           env:
             - name: PORT
               value: "3000"
-            - name: DB_PASSWORD
+            - name: NATS_URL
               valueFrom:
-                secretKeyRef:
-                  name: todo-postgres-secret
-                  key: POSTGRES_PASSWORD
+                configMapKeyRef:
+                  name: todo-backend-config
+                  key: NATS_URL
+            - name: NATS_SUBJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: todo-backend-config
+                  key: NATS_SUBJECT
           ports:
             - containerPort: 3000
           readinessProbe:
