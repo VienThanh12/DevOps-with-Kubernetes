@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: europe-north1-docker.pkg.dev/dwk-gke-482511/dwk-repo/todo-backend:1.0
+          image: todo-backend:1.0
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

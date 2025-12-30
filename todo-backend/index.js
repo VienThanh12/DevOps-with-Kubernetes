@@ -31,7 +31,10 @@ async function ensureSchema() {
   const client = await pool.connect();
   try {
     await client.query(
-      "CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, text VARCHAR(140) NOT NULL)"
+      "CREATE TABLE IF NOT EXISTS todos (id SERIAL PRIMARY KEY, text VARCHAR(140) NOT NULL, done BOOLEAN NOT NULL DEFAULT FALSE)"
+    );
+    await client.query(
+      "ALTER TABLE IF EXISTS todos ADD COLUMN IF NOT EXISTS done BOOLEAN NOT NULL DEFAULT FALSE"
     );
   } finally {
     client.release();
@@ -103,7 +106,7 @@ const server = http.createServer((req, res) => {
     (async () => {
       try {
         const { rows } = await pool.query(
-          "SELECT id, text FROM todos ORDER BY id ASC"
+          "SELECT id, text, done FROM todos ORDER BY id ASC"
         );
         logEvent("todos_list", { count: rows.length });
         return send(res, 200, { todos: rows });
@@ -113,6 +116,37 @@ const server = http.createServer((req, res) => {
       }
     })();
     return;
+  }
+  if (req.method === "PUT" && /^\/todos\/\d+$/.test(req.url)) {
+    const m = req.url.match(/^\/todos\/(\d+)$/);
+    const id = parseInt(m[1], 10);
+    return parseBody(req, (err, body) => {
+      if (err) return send(res, 400, "invalid body\n");
+      const done = body && typeof body.done === "boolean" ? body.done : null;
+      if (done === null) {
+        logEvent("todo_update_reject", { id, reason: "missing_done" });
+        return send(res, 400, {
+          error: "Body must include boolean field 'done'",
+        });
+      }
+      (async () => {
+        try {
+          const { rows } = await pool.query(
+            "UPDATE todos SET done = $1 WHERE id = $2 RETURNING id, text, done",
+            [done, id]
+          );
+          if (!rows || rows.length === 0) {
+            logEvent("todo_update_not_found", { id });
+            return send(res, 404, { error: "todo not found" });
+          }
+          logEvent("todo_update", { id, done });
+          return send(res, 200, { todo: rows[0] });
+        } catch (e) {
+          logEvent("db_error", { op: "update", message: e && e.message });
+          return send(res, 500, { error: "db error" });
+        }
+      })();
+    });
   }
   if (req.method === "POST" && req.url === "/todos") {
     return parseBody(req, (err, body) => {

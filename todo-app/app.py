@@ -22,41 +22,61 @@ HTML_TEMPLATE = """<!doctype html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Todo App</title>
+        <title>The Project App v2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: system-ui, Arial, sans-serif; margin: 2rem; }
         .container { max-width: 640px; margin: auto; }
+                header { margin-bottom: 1rem; }
                 input { padding: .5rem; width: 70%; }
         button { padding: .5rem 1rem; }
         ul { margin-top: 1rem; }
                 img { max-width: 100%; display: block; margin-top: 1rem; }
                 .error { color: #b00020; }
+                .section { margin-top: 1.5rem; }
+                .footer { margin-top: 2rem; font-size: .9rem; color: #555; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Todo App</h1>
+                <header>
+                    <h1>The Project App</h1>
+                    <img id="bannerImg" src="/image" alt="Banner image" />
+                </header>
 
-                <input id="todoInput" type="text" placeholder="Write a todo (max 140 chars)" maxlength="140" />
-                <button id="sendBtn" onclick="addTodo()" disabled>Send</button>
-
-        <p id="counter">0 / 140</p>
-                <p id="err" class="error" style="display:none;">Todo must be 140 characters or less.</p>
-
-        <h2>Existing Todos</h2>
-        <ul id="todoList"></ul>
-
-                <h2>Image</h2>
-                <p>Random image (cached for %%TTL%% minutes):</p>
-                <img id="todoImg" src="/image" alt="Random image" />
-
-                <div>
-                    <input type="file" id="fileInput" accept="image/*" />
-                    <button id="uploadBtn">Upload</button>
+                <div class="section">
+                    <input id="todoInput" type="text" placeholder="Enter a new todo (max 140 chars)" maxlength="140" />
+                    <button id="sendBtn" onclick="addTodo()" disabled>Create todo</button>
+                    <p id="counter">0 / 140</p>
+                    <p id="err" class="error" style="display:none;">Todo must be 140 characters or less.</p>
                 </div>
 
-                <p> DevOps with Kubernetes 2025 </p>   
+                <div class="section">
+                    <h2>Todo</h2>
+                    <ul id="todoList"></ul>
+                </div>
+
+                <div class="section">
+                    <h2>Done</h2>
+                    <ul id="doneList"></ul>
+                </div>
+                <div class="section">
+                    <p id="todosStatus" style="color:#555"></p>
+                </div>
+
+                <div class="section">
+                    <h2>Image</h2>
+                    <p>Random image (cached for %%TTL%% minutes):</p>
+                    <img id="todoImg" src="/image" alt="Random image" />
+                    <div>
+                        <input type="file" id="fileInput" accept="image/*" />
+                        <button id="uploadBtn">Upload</button>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <a href="https://devopswithkubernetes.com" target="_blank" rel="noopener noreferrer">DevOps with Kubernetes 2025</a> — University of Helsinki
+                </div>
     </div>
 
 <script>
@@ -67,12 +87,14 @@ const sendBtn = document.getElementById("sendBtn");
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const img = document.getElementById("todoImg");
-
-input.addEventListener("input", () => {
-    counter.textContent = input.value.length + " / 140";
-        const ok = input.value.length > 0 && input.value.length <= 140;
-        sendBtn.disabled = !ok;
-        err.style.display = input.value.length > 140 ? "block" : "none";
+                const statusEl = document.getElementById("todosStatus");
+                todoList.innerHTML = pending.length
+                    ? pending.map(t => (`<li>${escapeHtml(t.text)} <button onclick="markDone(${t.id})">Mark as done</button></li>`)).join("")
+                    : `<li>(No pending todos)</li>`;
+                doneList.innerHTML = done.length
+                    ? done.map(t => (`<li>${escapeHtml(t.text)}</li>`)).join("")
+                    : `<li>(No completed todos)</li>`;
+                statusEl.textContent = `Loaded ${todos.length} todos`;
 });
 
 function addTodo() {
@@ -111,12 +133,41 @@ uploadBtn.addEventListener("click", async () => {
 async function loadTodos() {
     try {
         const res = await fetch("/todos");
-        const data = await res.json();
-        const list = document.getElementById("todoList");
-        list.innerHTML = (data.todos || []).map(t => `<li>${t}</li>`).join("");
+                const data = await res.json();
+                const todos = Array.isArray(data.todos) ? data.todos : [];
+                const todoList = document.getElementById("todoList");
+                const doneList = document.getElementById("doneList");
+                const pending = todos.filter(t => !t.done);
+                const done = todos.filter(t => !!t.done);
+                todoList.innerHTML = pending.map(t => (
+                    `<li>${escapeHtml(t.text)} <button onclick="markDone(${t.id})">Mark as done</button></li>`
+                )).join("");
+                doneList.innerHTML = done.map(t => (
+                    `<li>${escapeHtml(t.text)}</li>`
+                )).join("");
     } catch (e) {
         // ignore
     }
+}
+
+function markDone(id) {
+    fetch(`/todos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: true })
+    }).then(res => {
+        if (!res.ok) throw new Error("Failed to update");
+        loadTodos();
+    }).catch(() => alert("Failed to mark as done"));
+}
+
+function escapeHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/\'/g, '&#39;');
 }
 loadTodos();
 </script>
@@ -149,6 +200,32 @@ class TodoHandler(BaseHTTPRequestHandler):
             self.handle_image_post()
         elif self.path == "/todos":
             self.proxy_todos_post()
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def do_PUT(self):
+        # Proxy PUT /todos/<id> to backend
+        if self.path.startswith("/todos/"):
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                body = self.rfile.read(length) if length > 0 else b""
+                ct = self.headers.get("Content-Type", "application/json")
+                url = f"{TODO_BACKEND_URL}{self.path}"
+                req = urllib.request.Request(url, data=body, method="PUT")
+                req.add_header("Content-Type", ct)
+                with urllib.request.urlopen(req, timeout=3) as resp:
+                    data = resp.read()
+                    code = resp.getcode() or 200
+                    ct2 = resp.headers.get("Content-Type", "application/json")
+                    self.send_response(code)
+                    self.send_header("Content-Type", ct2)
+                    self.send_header("Content-Length", str(len(data)))
+                    self.end_headers()
+                    self.wfile.write(data)
+            except Exception:
+                self.send_response(502)
+                self.end_headers()
         else:
             self.send_response(404)
             self.end_headers()
