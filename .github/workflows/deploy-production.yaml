@@ -3,7 +3,7 @@ name: Build and publish (production)
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   build-publish-production:
