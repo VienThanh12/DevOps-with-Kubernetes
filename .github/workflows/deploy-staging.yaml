@@ -14,6 +14,8 @@ jobs:
 
     env:
       DOCKER_ORG: ${{ secrets.DOCKERHUB_USERNAME }}
+      CONFIG_REPO: ${{ vars.CONFIG_REPO }}
+      CONFIG_PATH: gitops/overlays/staging
 
     steps:
       - name: Checkout
@@ -40,13 +42,23 @@ jobs:
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v2
 
-      - name: Update staging images via kustomize
-        working-directory: gitops/overlays/staging
+      - name: Checkout config repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CONFIG_REPO }}
+          token: ${{ secrets.CONFIG_REPO_TOKEN }}
+          path: config-repo
+
+      - name: Update staging images in config repo via kustomize
+        working-directory: config-repo/${{ env.CONFIG_PATH }}
         run: |
           kustomize edit set image broadcaster=${{ secrets.DOCKERHUB_USERNAME }}/broadcaster:${GITHUB_SHA} todo-backend=${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:${GITHUB_SHA}
 
-      - name: Commit kustomization.yaml to GitHub (staging)
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: "gitops/overlays/staging/kustomization.yaml"
-          message: "staging: deploy ${{ github.sha }}"
+      - name: Commit and push to config repo
+        working-directory: config-repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Update staging images to ${GITHUB_SHA}" || echo "No changes to commit"
+          git push
