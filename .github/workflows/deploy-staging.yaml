@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'gitops/**'
-      - '.github/**'
+      - "gitops/**"
+      - ".github/**"
 
 jobs:
   build-publish-staging:
