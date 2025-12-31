@@ -325,6 +325,13 @@ Click an exercise number to jump directly to its section.
 - Evidence:
   ![4.10](./sample/4.10.png)
 
+### <a id="410"></a> Exercise 5.1
+
+- Branch: [5.1](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/5.1)
+- Evidence:
+  ![5.1.1](./sample/5.1.1.png)
+  ![5.1.2](./sample/5.1.2.png)
+
 ---
 
 ## 📝 Notes – DBaaS (Cloud SQL) vs DIY PostgreSQL on GKE (PVC)

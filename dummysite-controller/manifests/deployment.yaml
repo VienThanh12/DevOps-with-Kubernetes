@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dummysite-controller-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dummysite-controller
+  template:
+    metadata:
+      labels:
+        app: dummysite-controller
+    spec:
+      serviceAccountName: dummysite-controller-account
+      containers:
+        - name: controller
+          image: node:18-alpine
+          command: ["node", "/controller/index.js"]
+          volumeMounts:
+            - name: controller-code
+              mountPath: /controller
+      volumes:
+        - name: controller-code
+          configMap:
+            name: dummysite-controller-code
+            defaultMode: 0777
