@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: log-output
-          image: k3d-local-registry:5000/log-output:latest
-          imagePullPolicy: Always
+          image: log-output:latest
+          imagePullPolicy: Never
           envFrom:
             - configMapRef:
                 name: log-output-config
