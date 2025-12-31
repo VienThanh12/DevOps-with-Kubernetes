@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: log-output
-          image: vienha/log-output:latest
-          imagePullPolicy: IfNotPresent
+          image: localhost:5000/log-output:latest
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: log-output-config
