@@ -61,4 +61,5 @@ jobs:
           message: "Update production images to ${GITHUB_REF_NAME}"
           author_name: "github-actions[bot]"
           author_email: "github-actions[bot]@users.noreply.github.com"
-          token: ${{ secrets.CONFIG_REPO_TOKEN }}
+          github_token: ${{ secrets.CONFIG_REPO_TOKEN }}
+          push: true
