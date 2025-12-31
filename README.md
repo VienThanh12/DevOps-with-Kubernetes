@@ -261,3 +261,6 @@ DBaaS favors **simplicity, reliability, and low operational overhead** at a high
   ![4.6.2](./sample/4.6.2.png)
   ![4.6.3](./sample/4.6.3.png)
   ![4.6.4](./sample/4.6.4.png)
+
+- [4.7](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/4.7)
+- [4.7](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/4.8)
