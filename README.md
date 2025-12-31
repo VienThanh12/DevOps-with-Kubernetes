@@ -17,6 +17,7 @@ Click an exercise number to jump directly to its section.
 | **Chapter 2** | [2.1](#21) · [2.2](#22) · [2.3](#23) · [2.4](#24) · [2.5](#25) · [2.6](#26) · [2.7](#27) · [2.8](#28) · [2.9](#29) · [2.10](#210)                                              |
 | **Chapter 3** | [3.1](#31) · [3.2](#32) · [3.3](#33) · [3.4](#34) · [3.5](#35) · [3.6](#36) · [3.7](#37) · [3.8](#38) · [3.9](#39) · [3.10](#310) · [3.11](#311) · [3.12](#312)                |
 | **Chapter 4** | [4.1](#41) · [4.2](#42) · [4.3](#43) · [4.4](#44) · [4.5](#45) · [4.6](#46) · [4.7](#47) · [4.8](#48) · [4.9](#49) · [4.10](#410)                                              |
+| **Chapter 5** | [5.1](#51)                                                                                                                                                                     |
 
 ---
 
@@ -28,6 +29,7 @@ Click an exercise number to jump directly to its section.
 | Chapter 2 | 2.1 – 2.10          |
 | Chapter 3 | 3.1 – 3.12          |
 | Chapter 4 | 4.1 – 4.10          |
+| Chapter 5 | 5.1                 |
 
 ---
 
@@ -57,7 +59,6 @@ Click an exercise number to jump directly to its section.
 
 - Branch: [1.5](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.5)
 - Evidence:
-
   ![1.5.1](./sample/1.5.1.png)
   ![1.5.2](./sample/1.5.2.png)
 
@@ -65,7 +66,6 @@ Click an exercise number to jump directly to its section.
 
 - Branch: [1.6](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/1.6)
 - Evidence:
-
   ![1.6](./sample/1.6.png)
 
 ### <a id="17"></a> Exercise 1.7
@@ -325,7 +325,11 @@ Click an exercise number to jump directly to its section.
 - Evidence:
   ![4.10](./sample/4.10.png)
 
-### <a id="410"></a> Exercise 5.1
+---
+
+## 🧩 Chapter 5 – Advanced Topics
+
+### <a id="51"></a> Exercise 5.1
 
 - Branch: [5.1](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/5.1)
 - Evidence:
