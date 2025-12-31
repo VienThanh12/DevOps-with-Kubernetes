@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "*"
-
 jobs:
   build-publish-production:
     name: Build, Push, Update Kustomize (production)
