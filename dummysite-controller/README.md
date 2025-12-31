@@ -3,6 +3,7 @@
 This adds a `DummySite` Custom Resource that fetches an external URL and serves a static copy via an in-cluster `nginx` Deployment.
 
 ## Resources
+
 - CRD: `dummysites.stable.dwk` defines `spec.website_url`
 - Controller: runs in-cluster, watches `DummySite` and creates:
   - ConfigMap `dummysite-<name>` containing `index.html`
@@ -10,6 +11,7 @@ This adds a `DummySite` Custom Resource that fetches an external URL and serves 
   - Service `dummysite-<name>` exposing port 80
 
 ## Deploy
+
 ```bash
 # Apply CRD
 kubectl apply -f dummysite-controller/manifests/resourcedefinition.yaml
@@ -26,6 +28,7 @@ kubectl apply -f dummysite-controller/manifests/dummysite.yaml
 ```
 
 ## Verify
+
 ```bash
 kubectl get dummysites
 kubectl get deploy,svc | grep dummysite-
@@ -36,6 +39,7 @@ curl -s http://localhost:8080 | head -n 20
 ```
 
 ## Cleanup
+
 ```bash
 kubectl delete -f dummysite-controller/manifests/dummysite.yaml
 kubectl delete -f dummysite-controller/manifests/deployment.yaml

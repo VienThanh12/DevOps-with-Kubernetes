@@ -10,7 +10,7 @@ spec:
     plural: dummysites
     singular: dummysite
     shortNames:
-    - ds
+      - ds
   versions:
     - name: v1
       served: true
