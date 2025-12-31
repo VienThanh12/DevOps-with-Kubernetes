@@ -442,3 +442,4 @@ Click an exercise number to jump directly to its section.
 ### Conclusion
 
 DBaaS favors **simplicity, reliability, and low operational overhead** at a higher service cost, while DIY PostgreSQL on GKE offers **greater control and flexibility** but requires **significantly more maintenance and operational expertise**.
+
