@@ -12,7 +12,7 @@ patches:
 images:
 - name: broadcaster
   newName: vienha/broadcaster
-  newTag: a1a85e5d97fc3910a5d020b3bbb259422cef0738
+  newTag: 678ca9fe7b0ce4c90f3e5763632179f9750fc750
 - name: todo-backend
   newName: vienha/todo-backend
-  newTag: a1a85e5d97fc3910a5d020b3bbb259422cef0738
+  newTag: 678ca9fe7b0ce4c90f3e5763632179f9750fc750
