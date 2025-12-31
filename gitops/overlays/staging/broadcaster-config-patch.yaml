@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: broadcaster-config
+# namespace will be set by kustomize
+data:
+  EXTERNAL_TYPE: "none"
+  WEBHOOK_URL: ""

@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  # Add backup resources only in production
+  - ../../todo-backend/manifests/todo-backup-config.yaml
+  - ../../todo-backend/manifests/todo-postgres-backup-cronjob.yaml
+
+namespace: production
+namePrefix: prod-

@@ -45,6 +45,10 @@ function toMessageText(evt) {
 }
 
 async function sendToExternal(evt) {
+  if (EXTERNAL_TYPE === "none") {
+    // logging-only mode for staging; skip external forwarding
+    return;
+  }
   const messageText = toMessageText(evt);
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
