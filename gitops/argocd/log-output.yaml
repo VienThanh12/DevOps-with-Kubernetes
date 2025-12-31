@@ -5,13 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
+
   source:
-    repoURL: https://github.com/VienThanh12/DevOps-with-Kubernetes.git
+    repoURL: git@github.com:VienThanh12/DevOps-with-Kubernetes.git
     targetRevision: main
     path: log_output
+
   destination:
     server: https://kubernetes.default.svc
-    namespace: project
+    namespace: default
+
   syncPolicy:
     automated:
       prune: true
