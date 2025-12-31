@@ -2,10 +2,17 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+- ../../base
 
 namespace: staging
 namePrefix: staging-
 
 patches:
-  - path: broadcaster-config-patch.yaml
+- path: broadcaster-config-patch.yaml
+images:
+- name: broadcaster
+  newName: vienha/broadcaster
+  newTag: 74e176050f6865f9043b62e8c60e3f78d5c450af
+- name: todo-backend
+  newName: vienha/todo-backend
+  newTag: 74e176050f6865f9043b62e8c60e3f78d5c450af
