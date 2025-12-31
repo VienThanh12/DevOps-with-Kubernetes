@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: todo-broadcaster-production
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: git@github.com:VienThanh12/DevOps-with-Kubernetes.git
+      path: broadcaster/manifests
+      targetRevision: main
+    - repoURL: git@github.com:VienThanh12/DevOps-with-Kubernetes.git
+      path: todo-backend/manifests
+      targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
