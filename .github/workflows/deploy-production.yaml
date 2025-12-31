@@ -58,7 +58,7 @@ jobs:
         with:
           cwd: "config-repo"
           add: "."
-          message: "Update production images to ${GITHUB_REF_NAME}"
+          message: "Update production images to ${GITHUB_REF_NAME} [skip ci]"
           author_name: "github-actions[bot]"
           author_email: "github-actions[bot]@users.noreply.github.com"
           github_token: ${{ secrets.CONFIG_REPO_TOKEN }}

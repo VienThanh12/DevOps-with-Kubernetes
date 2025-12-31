@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'gitops/**'
+      - '.github/**'
 
 jobs:
   build-publish-staging:
@@ -59,7 +62,7 @@ jobs:
         with:
           cwd: "config-repo"
           add: "."
-          message: "Update staging images to ${GITHUB_SHA}"
+          message: "Update staging images to ${GITHUB_SHA} [skip ci]"
           author_name: "github-actions[bot]"
           author_email: "github-actions[bot]@users.noreply.github.com"
           github_token: ${{ secrets.CONFIG_REPO_TOKEN }}
