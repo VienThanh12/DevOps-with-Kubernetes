@@ -2,9 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: log-output-svc
-  namespace: exercises
-  annotations:
-    cloud.google.com/neg: '{"ingress": true}'
+  namespace: project
 spec:
   selector:
     app: log-output

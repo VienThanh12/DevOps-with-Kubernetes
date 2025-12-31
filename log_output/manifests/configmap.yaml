@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: log-output-config
-  namespace: exercises
+  namespace: project
 data:
   MESSAGE: "hello world"
   information.txt: |
