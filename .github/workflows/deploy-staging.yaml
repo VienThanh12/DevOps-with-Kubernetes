@@ -55,10 +55,11 @@ jobs:
           kustomize edit set image broadcaster=${{ secrets.DOCKERHUB_USERNAME }}/broadcaster:${GITHUB_SHA} todo-backend=${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:${GITHUB_SHA}
 
       - name: Commit and push to config repo
-        working-directory: config-repo
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Update staging images to ${GITHUB_SHA}" || echo "No changes to commit"
-          git push
+        uses: EndBug/add-and-commit@v9
+        with:
+          cwd: "config-repo"
+          add: "."
+          message: "Update staging images to ${GITHUB_SHA}"
+          author_name: "github-actions[bot]"
+          author_email: "github-actions[bot]@users.noreply.github.com"
+          token: ${{ secrets.CONFIG_REPO_TOKEN }}
