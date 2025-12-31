@@ -4,7 +4,7 @@ metadata:
   name: broadcaster-config
   namespace: project
 data:
-  NATS_URL: nats://my-nats.default.svc.cluster.local:4222
+  NATS_URL: nats://my-nats:4222
   NATS_SUBJECT: todos.events
   NATS_QUEUE: broadcaster
   EXTERNAL_TYPE: generic
