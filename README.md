@@ -336,6 +336,19 @@ Click an exercise number to jump directly to its section.
   ![5.1.1](./sample/5.1.1.png)
   ![5.1.2](./sample/5.1.2.png)
 
+### <a id="56"></a> Exercise 5.6
+
+- Branch: [5.6](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/5.6)
+- Evidence:
+  ![5.6.1](./sample/5.6.1.png)
+  ![5.6.2](./sample/5.6.2.png)
+  ![5.6.3](./sample/5.6.3.png)
+
+A Knative Service was successfully deployed on k3d.
+The revision was created and the workload pod reached Running state.
+Due to corporate TLS interception, the Kourier ingress manifest could not be fetched.
+The service was therefore verified by port-forwarding directly to the Knative revision pod, confirming correct Knative build, injection, and request handling.
+
 ---
 
 ## 📝 Notes – DBaaS (Cloud SQL) vs DIY PostgreSQL on GKE (PVC)
