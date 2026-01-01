@@ -17,7 +17,7 @@ Click an exercise number to jump directly to its section.
 | **Chapter 2** | [2.1](#21) · [2.2](#22) · [2.3](#23) · [2.4](#24) · [2.5](#25) · [2.6](#26) · [2.7](#27) · [2.8](#28) · [2.9](#29) · [2.10](#210)                                              |
 | **Chapter 3** | [3.1](#31) · [3.2](#32) · [3.3](#33) · [3.4](#34) · [3.5](#35) · [3.6](#36) · [3.7](#37) · [3.8](#38) · [3.9](#39) · [3.10](#310) · [3.11](#311) · [3.12](#312)                |
 | **Chapter 4** | [4.1](#41) · [4.2](#42) · [4.3](#43) · [4.4](#44) · [4.5](#45) · [4.6](#46) · [4.7](#47) · [4.8](#48) · [4.9](#49) · [4.10](#410)                                              |
-| **Chapter 5** | [5.1](#51) · [5.6](#56) · [5.7](#57)                                                                                                                                            |
+| **Chapter 5** | [5.1](#51) · [5.6](#56) · [5.7](#57)                                                                                                                                           |
 
 ---
 
@@ -345,6 +345,7 @@ Click an exercise number to jump directly to its section.
   ![5.6.3](./sample/5.6.3.png)
 
 Notes:
+
 - Knative Service deployed on k3d; revision reached Running state.
 - Due to corporate TLS interception, Kourier ingress manifest could not be fetched.
 - Service verified via port-forward to the revision pod, confirming build and request handling.
@@ -412,9 +413,7 @@ Notes:
 
 **DBaaS**
 
-
 **DIY**
-
 
 ---
 
