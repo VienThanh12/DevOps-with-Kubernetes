@@ -455,3 +455,4 @@ The service was therefore verified by port-forwarding directly to the Knative re
 ### Conclusion
 
 DBaaS favors **simplicity, reliability, and low operational overhead** at a higher service cost, while DIY PostgreSQL on GKE offers **greater control and flexibility** but requires **significantly more maintenance and operational expertise**.
+
