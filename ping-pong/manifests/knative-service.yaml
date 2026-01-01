@@ -1,0 +1,54 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ping-pong
+  namespace: exercises
+  annotations:
+    autoscaling.knative.dev/minScale: "0"
+    autoscaling.knative.dev/target: "100"
+spec:
+  template:
+    metadata:
+      annotations:
+        # Optional: allow scale to zero and tune concurrency
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/target: "100"
+    spec:
+      containers:
+        - name: ping-pong
+          image: europe-north1-docker.pkg.dev/dwk-gke-482511/dwk-repo/ping-pong:latest
+          imagePullPolicy: IfNotPresent
+          # IMPORTANT: Knative sets PORT=8080. Do not override PORT here.
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ping-pong-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ping-pong-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: ping-pong-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: ping-pong-config
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

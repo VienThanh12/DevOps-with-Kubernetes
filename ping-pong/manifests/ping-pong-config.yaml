@@ -4,7 +4,7 @@ metadata:
   name: ping-pong-config
   namespace: exercises
 data:
-  PORT: "8081"
+  PORT: "8080"
   DB_HOST: "postgres"
   DB_PORT: "5432"
   DB_NAME: "pingpong"

@@ -27,11 +27,11 @@ spec:
                   name: postgres-secret
                   key: POSTGRES_PASSWORD
           ports:
-            - containerPort: 8081
+            - containerPort: 8080
           readinessProbe:
             httpGet:
               path: /count
-              port: 8081
+              port: 8080
             initialDelaySeconds: 2
             periodSeconds: 5
             failureThreshold: 3
