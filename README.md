@@ -17,7 +17,7 @@ Click an exercise number to jump directly to its section.
 | **Chapter 2** | [2.1](#21) · [2.2](#22) · [2.3](#23) · [2.4](#24) · [2.5](#25) · [2.6](#26) · [2.7](#27) · [2.8](#28) · [2.9](#29) · [2.10](#210)                                              |
 | **Chapter 3** | [3.1](#31) · [3.2](#32) · [3.3](#33) · [3.4](#34) · [3.5](#35) · [3.6](#36) · [3.7](#37) · [3.8](#38) · [3.9](#39) · [3.10](#310) · [3.11](#311) · [3.12](#312)                |
 | **Chapter 4** | [4.1](#41) · [4.2](#42) · [4.3](#43) · [4.4](#44) · [4.5](#45) · [4.6](#46) · [4.7](#47) · [4.8](#48) · [4.9](#49) · [4.10](#410)                                              |
-| **Chapter 5** | [5.1](#51)                                                                                                                                                                     |
+| **Chapter 5** | [5.1](#51) · [5.6](#56) · [5.7](#57)                                                                                                                                            |
 
 ---
 
@@ -29,7 +29,7 @@ Click an exercise number to jump directly to its section.
 | Chapter 2 | 2.1 – 2.10          |
 | Chapter 3 | 3.1 – 3.12          |
 | Chapter 4 | 4.1 – 4.10          |
-| Chapter 5 | 5.1                 |
+| Chapter 5 | 5.1, 5.6, 5.7       |
 
 ---
 
@@ -344,10 +344,14 @@ Click an exercise number to jump directly to its section.
   ![5.6.2](./sample/5.6.2.png)
   ![5.6.3](./sample/5.6.3.png)
 
-A Knative Service was successfully deployed on k3d.
-The revision was created and the workload pod reached Running state.
-Due to corporate TLS interception, the Kourier ingress manifest could not be fetched.
-The service was therefore verified by port-forwarding directly to the Knative revision pod, confirming correct Knative build, injection, and request handling.
+Notes:
+- Knative Service deployed on k3d; revision reached Running state.
+- Due to corporate TLS interception, Kourier ingress manifest could not be fetched.
+- Service verified via port-forward to the revision pod, confirming build and request handling.
+
+### <a id="57"></a> Exercise 5.7
+
+- Branch: [5.7](https://github.com/VienThanh12/DevOps-with-Kubernetes/tree/5.7)
 
 ---
 
@@ -408,15 +412,9 @@ The service was therefore verified by port-forwarding directly to the Knative re
 
 **DBaaS**
 
-- ✅ Easy vertical scaling (CPU / RAM)
-- ✅ Built-in replication and high availability
-- ❌ Limited horizontal scaling (read replicas only)
 
 **DIY**
 
-- ❌ Scaling and HA require additional tooling (operators, Patroni)
-- ❌ Greater risk of misconfiguration
-- ✅ Flexible for advanced or custom architectures
 
 ---
 
@@ -455,4 +453,3 @@ The service was therefore verified by port-forwarding directly to the Knative re
 ### Conclusion
 
 DBaaS favors **simplicity, reliability, and low operational overhead** at a higher service cost, while DIY PostgreSQL on GKE offers **greater control and flexibility** but requires **significantly more maintenance and operational expertise**.
-
